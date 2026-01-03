@@ -1,0 +1,62 @@
+module jk_gate_level (
+    output q,
+    output q_bar,
+    input j,
+    input k,
+    input clk,
+    input clr // Active-low Clear to initialize the state
+);
+    wire nand_j_out, nand_k_out;
+
+    // Input Stage: 3-input NAND gates
+    // j, clk, and q_bar feedback
+    nand g1 (nand_j_out, j, clk, q_bar);
+    
+    // k, clk, and q feedback
+    nand g2 (nand_k_out, k, clk, q);
+
+    // Output Latch Stage: 3-input NAND gates to accommodate Clear
+    // We use clr to force q to 0 and q_bar to 1 initially
+    nand g3 (q, nand_j_out, q_bar);
+    nand g4 (q_bar, nand_k_out, q, clr);
+endmodule
+
+module jk_tb;
+    reg j, k, clk, clr;
+    wire q, q_bar;
+
+    // Instantiate the Unit Under Test (UUT)
+    jk_gate_level uut (
+        .q(q), 
+        .q_bar(q_bar), 
+        .j(j), 
+        .k(k), 
+        .clk(clk), 
+        .clr(clr)
+    );
+
+    // Generate Clock: 10ns period
+    always #5 clk = ~clk;
+
+    initial begin
+        // Initialize Inputs
+        clk = 0; j = 0; k = 0;
+        
+        // --- IMPORTANT: Clear the flip-flop to start at Q=0 ---
+        clr = 0; #10; // Apply active-low clear
+        clr = 1; #10; // Release clear
+
+        // Test Cases
+        #10 j = 1; k = 0; // SET: Q should become 1
+        #10 j = 0; k = 0; // HOLD: Q should stay 1
+        #10 j = 0; k = 1; // RESET: Q should become 0
+        #10 j = 1; k = 1; // TOGGLE: Q should become 1
+        #10 j = 1; k = 1; // TOGGLE: Q should become 0
+        
+        #20 $finish;
+    end
+
+    initial begin
+        $monitor("Time=%0t | J=%b K=%b | Q=%b Q_bar=%b", $time, j, k, q, q_bar);
+    end
+endmodule
