@@ -1,3 +1,23 @@
+//Create JK Flip flop 
+//Gate Lev modelling
+
+/*module JK_ff(q,qbar,j,k,clk,clr);
+
+input j,k,clk,clr;
+output  q,qbar;
+
+
+wire nand1_out; // output from nand1
+wire nand2_out; // output from nand2
+
+nand(nand1_out, j,clk,qbar);
+nand(nand2_out, k,clk,q);
+nand(q,qbar,nand1_out);
+nand(qbar,q,nand2_out,clr);
+
+
+endmodule 
+
 module jk_gate_level (
     output q,
     output q_bar,
@@ -19,6 +39,31 @@ module jk_gate_level (
     // We use clr to force q to 0 and q_bar to 1 initially
     nand g3 (q, nand_j_out, q_bar);
     nand g4 (q_bar, nand_k_out, q, clr);
+endmodule */
+
+// Race around condition issue solved using Master Slave Flip Flop
+module jk_master_slave(q, qbar, j, k, clk, clr);
+    output q, qbar;
+    input j, k, clk, clr;
+    
+    wire mq, mqbar;   // Master latch outputs
+    wire clk_inv;
+    wire m_nand1, m_nand2, s_nand1, s_nand2;
+
+    not (clk_inv, clk);
+
+    // --- Master Latch Section ---
+    nand (m_nand1, j, clk, qbar);
+    nand (m_nand2, k, clk, q);
+    nand (mq, m_nand1, mqbar);
+    nand (mqbar, m_nand2, mq, clr); // clr initializes the loop
+
+    // --- Slave Latch Section ---
+    nand (s_nand1, mq, clk_inv);
+    nand (s_nand2, mqbar, clk_inv);
+    nand (q, s_nand1, qbar);
+    nand (qbar, s_nand2, q, clr);
+
 endmodule
 
 module jk_tb;
@@ -26,9 +71,9 @@ module jk_tb;
     wire q, q_bar;
 
     // Instantiate the Unit Under Test (UUT)
-    jk_gate_level uut (
+    jk_master_slave uut (
         .q(q), 
-        .q_bar(q_bar), 
+        .qbar(q_bar), 
         .j(j), 
         .k(k), 
         .clk(clk), 
