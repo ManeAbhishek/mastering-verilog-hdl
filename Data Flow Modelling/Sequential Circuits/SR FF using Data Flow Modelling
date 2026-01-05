@@ -1,0 +1,37 @@
+//Create SR Flip flop 
+//Data Flow  modelling
+
+module sr_ff(q,qbar,s,r,clk);
+input s,r,clk;
+output q,qbar;
+
+assign q= clk?(s|(~r&q)):q;
+assign qbar=~q;
+
+endmodule
+
+module SR_ff_tb;
+    reg s,r,clk;
+    wire q, qbar;
+
+   sr_ff ff(q,qbar,s,r,clk);
+
+    always #5 clk = ~clk;
+    initial begin
+        clk = 0;s = 1;r = 0;
+        #10  s = 0; r = 0;
+        #10  s = 1; r = 0;
+        #10 s = 0; r = 0;
+        #10 s = 0; r = 1;
+        #10 s = 1; r = 1;
+        #10 $stop;
+        $display("Simulation finished");
+        $finish;
+    end
+      
+    // Monitor the changes
+    initial begin
+        $monitor("At time %t: clk=%b, S=%b, R=%b | Q=%b, Qbar=%b", $time, clk, s, r, q, qbar);
+    end
+
+endmodule
