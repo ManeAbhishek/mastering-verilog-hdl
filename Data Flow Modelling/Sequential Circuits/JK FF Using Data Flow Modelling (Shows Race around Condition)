@@ -1,0 +1,46 @@
+//Create JK Flip flop 
+//Data Flow Modelling
+//Shows Race around condition
+
+module jk_ff(j,k,rst,clk,q,qbar);
+input j,k,clk;
+input rst;
+output  q,qbar;
+assign #1 q = rst ? 1'b0 : (clk ? ((j & ~q) | (~k & q)) : q);
+assign #1 qbar = ~q;
+endmodule
+
+module jk_tb;
+reg j,k,rst,clk;
+wire q,qbar;
+jk_ff jkf(j,k,rst,clk,q,qbar);
+
+always #5 clk=~clk;
+initial 
+begin
+clk = 0; j = 0; k = 0; rst = 1; 
+        
+        // Step 1: Apply Reset (Crucial for Data Flow to move away from 'x')
+        #10 rst = 0; 
+        $display("Reset released. Initial state: Q=%b", q);
+
+        // Step 2: Test SET (J=1, K=0)
+        #10 j = 1; k = 0;
+        
+        // Step 3: Test HOLD (J=0, K=0)
+        #10 j = 0; k = 0;
+
+        // Step 4: Test RESET (J=0, K=1)
+        #10 j = 0; k = 1;
+
+        // Step 5: Test TOGGLE (J=1, K=1)
+        // Note: In Data Flow, this may oscillate if clk stays high too long.
+        #10 j = 1; k = 1;
+#10 $stop;
+$display("Simulation finished");
+$finish;
+end
+initial begin
+        $monitor("At time %t: clk=%b, j=%b, k=%b | q=%b, qbar=%b", $time, clk, j, k, q, qbar);
+    end
+endmodule
