@@ -1,0 +1,32 @@
+/////Create T Flip flop 
+//Data Flow Modelling
+
+module T_ff_gate(q,qbar,rst,t,clk);
+input t,rst,clk;
+output  q,qbar;
+assign #1 q = rst ? 1'b0 : (clk ? ((t & ~q) | (~t & q)) : q);
+assign #1 qbar = ~q;
+endmodule
+
+module tff_test;
+reg t,clk,rst;
+wire q,qbar;
+
+T_ff_gate tf(q,qbar,rst,t,clk);
+
+always #5 clk=~clk;
+initial begin
+clk = 0; t=0;rst = 1; 
+        
+        // Step 1: Apply Reset (Crucial for Data Flow to move away from 'x')
+        #10 rst = 0; 
+#10t=1;
+#10 t=0;
+#10$stop;
+$display("Simulation Ended");
+$finish;
+end
+initial begin
+        $monitor("At time %t: clk=%b, t=%b | q=%b, qbar=%b", $time, clk, t, q, qbar);
+    end
+endmodule
