@@ -30,9 +30,9 @@ This repository features circuits implemented using three primary levels of abst
 
 ## 🧪 Simulation & Verification
 All modules are accompanied by a testbench to verify functional correctness. 
-* **Tools used:** [Vivado] ![Alt text](Vivado.png)
+* **Tools used:** [Vivado] 
 * **Waveform Viewer:** [Vivado]
-
+![Alt text](Vivado.png)
 ## 📈 Learning Goals
 * Mastering Verilog syntax and hardware timing.
 * Transitioning from combinational logic to complex sequential machines.
